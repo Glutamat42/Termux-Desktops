@@ -57,7 +57,7 @@ download_and_execute_script() {
         echo -e "\e[1;33m[!] Script already exists: /data/local/tmp/start_debian.sh\e[0m"
         echo -e "\e[1;33m[!] Skipping download...\e[0m"
     else
-        wget -O "/data/local/tmp/start_debian.sh" "https://raw.githubusercontent.com/LinuxDroidMaster/Termux-Desktops/main/scripts/chroot/debian/start_debian.sh"
+        wget -O "/data/local/tmp/start_debian.sh" "https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/chroot/debian/start_debian.sh"
         if [ $? -eq 0 ]; then
             success "Script downloaded successfully: /data/local/tmp/start_debian.sh"
             progress "Setting script permissions..."
@@ -192,7 +192,7 @@ install_lxde() {
 download_startxfce4_script() {
     progress "Downloading startxfce4_chrootDebian.sh script..."
     if [ "$DE_OPTION" -eq 1 ]; then
-        wget -O "./startxfce4_chrootDebian.sh" "https://raw.githubusercontent.com/LinuxDroidMaster/Termux-Desktops/main/scripts/chroot/debian/startxfce4_chrootDebian.sh"
+        wget -O "./startxfce4_chrootDebian.sh" "https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/chroot/debian/startxfce4_chrootDebian.sh"
         if [ $? -eq 0 ]; then
             success "startxfce4_chrootDebian.sh script downloaded successfully"
         else
@@ -218,7 +218,7 @@ main() {
             mkdir -p "$download_dir"
             success "Created directory: $download_dir"
         fi
-        download_file "$download_dir" "debian12-arm64.tar.gz" "https://github.com/LinuxDroidMaster/Termux-Desktops/releases/download/Debian/debian12-arm64.tar.gz"
+        download_file "$download_dir" "debian12-arm64.tar.gz" "https://github.com/Glutamat42/Termux-Desktops/releases/download/Debian/debian12-arm64.tar.gz"
         extract_file "$download_dir"
         download_and_execute_script "$download_dir"
         configure_debian_chroot
