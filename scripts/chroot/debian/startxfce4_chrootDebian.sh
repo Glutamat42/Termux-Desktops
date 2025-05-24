@@ -7,6 +7,7 @@ killall -9 termux-x11 Xwayland pulseaudio virgl_test_server_android termux-wake-
 am start --user 0 -n com.termux.x11/com.termux.x11.MainActivity
 
 sudo bash -c "busybox mount --bind $PREFIX/tmp /data/local/tmp/chrootDebian/tmp"
+sudo bash -c "busybox chroot /data/local/tmp/chrootDebian /bin/su - root -c 'chmod 777 /tmp'"  # tmp had invalid permissions after first setup. There is probably a easier way to solve this (without chrot), but i know this works.
 
 XDG_RUNTIME_DIR=${TMPDIR} termux-x11 :0 -ac &
 

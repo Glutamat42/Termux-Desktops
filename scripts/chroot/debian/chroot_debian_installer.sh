@@ -104,6 +104,8 @@ configure_debian_chroot() {
     groupadd -g 3003 aid_inet; \
     groupadd -g 3004 aid_net_raw; \
     groupadd -g 1003 aid_graphics; \
+    groupadd -g 1077 external_storage; \
+    groupadd -g 1023 media_rw; \
     usermod -g 3003 -G 3003,3004 -a _apt; \
     usermod -G 3003 -a root; \
     apt update; \
@@ -129,7 +131,9 @@ configure_debian_chroot() {
     # Add user to sudoers
     progress "Configuring sudo permissions..."
     busybox chroot $DEBIANPATH /bin/su - root -c "echo '$USERNAME ALL=(ALL:ALL) ALL' >> /etc/sudoers"
-    busybox chroot $DEBIANPATH /bin/su - root -c "usermod -aG aid_inet $USERNAME"
+
+    progress "Configuring user permissions (groups)"
+    busybox chroot $DEBIANPATH /bin/su - root -c "usermod -aG aid_inet external_storage media_rw $USERNAME"
 
     success "User account set up and sudo permissions configured"
 
@@ -220,6 +224,7 @@ main() {
         fi
         download_file "$download_dir" "debian12-arm64.tar.gz" "https://github.com/Glutamat42/Termux-Desktops/releases/download/Debian/debian12-arm64.tar.gz"
         extract_file "$download_dir"
+        rm "$download_dir/debian12-arm64.tar.gz"  # remove downloaded file, not needed anymore
         download_and_execute_script "$download_dir"
         configure_debian_chroot
         modify_startfile_with_username
