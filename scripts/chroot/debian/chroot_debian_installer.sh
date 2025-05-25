@@ -50,8 +50,7 @@ extract_file() {
     fi
 }
 
-# Function to download and execute script
-download_and_execute_script() {
+download_start_script() {
     progress "Downloading script..."
     if [ -e "/data/local/tmp/start_debian.sh" ]; then
         echo -e "\e[1;33m[!] Script already exists: /data/local/tmp/start_debian.sh\e[0m"
@@ -152,13 +151,7 @@ configure_debian_chroot() {
             install_xfce4
             ;;
         2)
-            install_kde
-            ;;
-        3)
-            install_cinnamon
-            ;;
-        4)
-            install_lxde
+            install_openbox
             ;;
         *)
             echo -e "\e[1;31m[!] Invalid option. Exiting...\e[0m"
@@ -171,44 +164,27 @@ configure_debian_chroot() {
 install_xfce4() {
     progress "Installing XFCE4..."
     busybox chroot $DEBIANPATH /bin/su - root -c 'apt update -y && apt install dbus-x11 xfce4 xfce4-terminal -y'
-    download_startxfce4_script
+    START_DESKTOP_CMD="startxfce4"
 }
 
-# Function to install KDE desktop environment
-install_kde() {
+# Function to install openbox window manager
+install_openbox() {
     progress "Installing KDE..."
-    busybox chroot $DEBIANPATH /bin/su - root -c 'apt update -y && apt install dbus-x11 kde-plasma-desktop -y'
+    busybox chroot $DEBIANPATH /bin/su - root -c 'apt update -y && apt install dbus-x11 xorg openbox -y'
+    START_DESKTOP_CMD="startx"
 }
 
-# Function to install Cinnamon desktop environment
-install_cinnamon() {
-    progress "Installing Cinnamon..."
-    busybox chroot $DEBIANPATH /bin/su - root -c 'apt update -y && apt install dbus-x11 cinnamon -y'
+create_termux_script() {
+    echo '#!/bin/sh
+    /data/local/tmp/start_debian.sh' | sudo tee /data/data/com.termux/files/usr/bin/start_debian > /dev/null
+    sudo chmod +x /data/data/com.termux/files/usr/bin/start_debian
 }
 
-# Function to install LXDE desktop environment
-install_lxde() {
-    progress "Installing LXDE..."
-    busybox chroot $DEBIANPATH /bin/su - root -c 'apt update -y && apt install dbus-x11 lxde -y'
-}
-
-# Function to download startxfce4_chrootDebian.sh script
-download_startxfce4_script() {
-    progress "Downloading startxfce4_chrootDebian.sh script..."
-    if [ "$DE_OPTION" -eq 1 ]; then
-        wget -O "./startxfce4_chrootDebian.sh" "https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/chroot/debian/startxfce4_chrootDebian.sh"
-        if [ $? -eq 0 ]; then
-            success "startxfce4_chrootDebian.sh script downloaded successfully"
-        else
-            echo -e "\e[1;31m[!] Error downloading startxfce4_chrootDebian.sh script. Exiting...\e[0m"
-            goodbye
-        fi
-    fi
-}
 
 modify_startfile_with_username() {
     success "Set start_debian.sh file with user name..."
-    sed -i "s/droidmaster/$USERNAME/g" "$DEBIANPATH/../start_debian.sh"
+    sed -i "s/CHROOT_USERNAME/$USERNAME/g" "$DEBIANPATH/../start_debian.sh"
+    sed -i "s/START_DESKTOP_CMD/$START_DESKTOP_CMD/g"
 }
 
 # Main function
@@ -225,7 +201,7 @@ main() {
         download_file "$download_dir" "debian12-arm64.tar.gz" "https://github.com/Glutamat42/Termux-Desktops/releases/download/Debian/debian12-arm64.tar.gz"
         extract_file "$download_dir"
         rm "$download_dir/debian12-arm64.tar.gz"  # remove downloaded file, not needed anymore
-        download_and_execute_script "$download_dir"
+        download_start_script "$download_dir"
         configure_debian_chroot
         modify_startfile_with_username
     fi
