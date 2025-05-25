@@ -6,9 +6,6 @@
 ## CHROOT (🍥 DEBIAN)
 * 🏁 [First steps](#first-steps-chroot)
 * 💻🍥 [Setting Debian chroot - automatic installer](#debian-chroot)
-* 🤚🍥 [Setting Debian chroot - Manual install](#debian-chroot-manual)
-* ⬇️ [Download scripts to run desktops](#easy-download-chroot)
-* ⬇️ [Download Debian chroot](#distros-chroot)
 * 🎨 [Customizations (Nerdfonts, XFCE4 terminal color palettes, etc)](#customizations-chroot)
 
 <br>
@@ -45,7 +42,7 @@ Please read first [#First Steps section](#first-steps-chroot)
 
 * Download the installer with this command: 
 ```
-wget https://raw.githubusercontent.com/LinuxDroidMaster/Termux-Desktops/main/scripts/chroot/debian/chroot_debian_installer.sh
+wget https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/chroot/debian/chroot_debian_installer.sh
 ```
 
 * Run it with sudo privileges from Termux: 
