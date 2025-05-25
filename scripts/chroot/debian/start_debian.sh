@@ -1,6 +1,9 @@
 #!/bin/bash
 
-DEBIANPATH="/data/local/tmp/chrootDebian"
+# REPLACEME strings will be replaced by installer script automatically
+DEBIANPATH=REPLACEME_DEBIANPATH
+START_DESKTOP_CMD=REPLACEME_START_DESKTOP_CMD
+CHROOT_USERNAME=REPLACEME_CHROOT_USERNAME
 
 # Kill all old prcoesses
 killall -9 termux-x11 Xwayland pulseaudio virgl_test_server_android termux-wake-lock
@@ -37,5 +40,5 @@ busybox mount -t tmpfs -o size=256M tmpfs $DEBIANPATH/dev/shm
 mkdir -p $DEBIANPATH/sdcard
 busybox mount --bind /sdcard $DEBIANPATH/sdcard
 
-busybox chroot $DEBIANPATH /bin/su - CHROOT_USERNAME -c 'export DISPLAY=:0 && export PULSE_SERVER=127.0.0.1 && dbus-launch --exit-with-session START_DESKTOP_CMD'
+busybox chroot $DEBIANPATH /bin/su - $CHROOT_USERNAME -c 'export DISPLAY=:0 && export PULSE_SERVER=127.0.0.1 && dbus-launch --exit-with-session $START_DESKTOP_CMD'
 "

@@ -1,5 +1,10 @@
 #!/bin/sh
 
+CHROOT_NAME=""  # allows to set a custom part in all names that have to be unique. Allows setting up multiple chroots in parallel. Can be left empty as long as this script is only used once.
+DOWNLOAD_FILE_NAME="debian-trixie-arm64.tar.xz"
+DEBIANPATH="/data/local/tmp/chrootDebian$CHROOT_NAME"
+SYSTEM_CMD_START_CHROOT="start_debian$CHROOT_NAME"
+
 # Function to show farewell message
 goodbye() {
     echo -e "\e[1;31m[!] Something went wrong. Exiting...\e[0m"
@@ -40,7 +45,7 @@ extract_file() {
         echo -e "\e[1;33m[!] Directory already exists: $1/debian12-arm64\e[0m"
         echo -e "\e[1;33m[!] Skipping extraction...\e[0m"
     else
-        tar xpvf "$1/debian12-arm64.tar.gz" -C "$1" --numeric-owner >/dev/null 2>&1
+        tar xpvf "$1/$DOWNLOAD_FILE_NAME" -C "$1" --numeric-owner >/dev/null 2>&1
         if [ $? -eq 0 ]; then
             success "File extracted successfully: $1/debian12-arm64"
         else
@@ -52,15 +57,15 @@ extract_file() {
 
 download_start_script() {
     progress "Downloading script..."
-    if [ -e "/data/local/tmp/start_debian.sh" ]; then
-        echo -e "\e[1;33m[!] Script already exists: /data/local/tmp/start_debian.sh\e[0m"
+    if [ -e "/data/local/tmp/start_debian$CHROOT_NAME.sh" ]; then
+        echo -e "\e[1;33m[!] Script already exists: /data/local/tmp/start_debian$CHROOT_NAME.sh\e[0m"
         echo -e "\e[1;33m[!] Skipping download...\e[0m"
     else
-        wget -O "/data/local/tmp/start_debian.sh" "https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/chroot/debian/start_debian.sh"
+        wget -O "/data/local/tmp/start_debian$CHROOT_NAME.sh" "https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/chroot/debian/start_debian.sh"
         if [ $? -eq 0 ]; then
-            success "Script downloaded successfully: /data/local/tmp/start_debian.sh"
+            success "Script downloaded successfully: /data/local/tmp/start_debian$CHROOT_NAME.sh"
             progress "Setting script permissions..."
-            chmod +x "/data/local/tmp/start_debian.sh"
+            chmod +x "/data/local/tmp/start_debian$CHROOT_NAME.sh"
             success "Script permissions set"
         else
             echo -e "\e[1;31m[!] Error downloading script. Exiting...\e[0m"
@@ -72,7 +77,6 @@ download_start_script() {
 # Function to configure Debian chroot environment
 configure_debian_chroot() {
     progress "Configuring Debian chroot environment..."
-    DEBIANPATH="/data/local/tmp/chrootDebian"
 
     # Check if DEBIANPATH directory exists
     if [ ! -d "$DEBIANPATH" ]; then
@@ -139,9 +143,7 @@ configure_debian_chroot() {
     # Prompt for desktop environment
     progress "Select a desktop environment to install:"
     echo "1. XFCE4"
-    echo "2. KDE - not ready"
-    echo "3. Cinnamon - not ready"
-    echo "4. LXDE - not ready"
+    echo "2. openbox"
     echo -n "Enter your choice (1-4): "
     read DE_OPTION
 
@@ -175,16 +177,21 @@ install_openbox() {
 }
 
 create_termux_script() {
-    echo '#!/bin/sh
-    /data/local/tmp/start_debian.sh' | sudo tee /data/data/com.termux/files/usr/bin/start_debian > /dev/null
-    sudo chmod +x /data/data/com.termux/files/usr/bin/start_debian
+    echo "#!/bin/sh
+    /data/local/tmp/start_debian$CHROOT_NAME.sh" | sudo tee /data/data/com.termux/files/usr/bin/$SYSTEM_CMD_START_CHROOT > /dev/null
+    sudo chmod +x /data/data/com.termux/files/usr/bin/$SYSTEM_CMD_START_CHROOT
 }
 
 
 modify_startfile_with_username() {
     success "Set start_debian.sh file with user name..."
-    sed -i "s/CHROOT_USERNAME/$USERNAME/g" "$DEBIANPATH/../start_debian.sh"
-    sed -i "s/START_DESKTOP_CMD/$START_DESKTOP_CMD/g"
+    sed -i "s/REPLACEME_CHROOT_USERNAME/$USERNAME/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
+    sed -i "s/REPLACEME_START_DESKTOP_CMD/$START_DESKTOP_CMD/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
+    sed -i "s/REPLACEME_DEBIANPATH/$DEBIANPATH/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
+}
+
+print_finish_msg() {
+    success "Setup finished. Run 'hash -r' once and then start chroot with $SYSTEM_CMD_START_CHROOT"
 }
 
 # Main function
@@ -193,17 +200,18 @@ main() {
         echo -e "\e[1;31m[!] This script must be run as root. Exiting...\e[0m"
         goodbye
     else
-        download_dir="/data/local/tmp/chrootDebian"
+        download_dir="$DEBIANPATH"
         if [ ! -d "$download_dir" ]; then
             mkdir -p "$download_dir"
             success "Created directory: $download_dir"
         fi
-        download_file "$download_dir" "debian12-arm64.tar.gz" "https://github.com/LinuxDroidMaster/Termux-Desktops/releases/download/Debian/debian12-arm64.tar.gz"
+        download_file "$download_dir" "$DOWNLOAD_FILE_NAME" "https://github.com/Glutamat42/Termux-Desktops/releases/download/debian-trixie-rootfs/debian-trixie-arm64.tar.xz"
         extract_file "$download_dir"
-        rm "$download_dir/debian12-arm64.tar.gz"  # remove downloaded file, not needed anymore
+        rm "$download_dir/$DOWNLOAD_FILE_NAME"  # remove downloaded file, not needed anymore
         download_start_script "$download_dir"
         configure_debian_chroot
         modify_startfile_with_username
+        print_finish_msg
     fi
 }
 
