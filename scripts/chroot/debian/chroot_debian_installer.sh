@@ -198,7 +198,7 @@ main() {
             mkdir -p "$download_dir"
             success "Created directory: $download_dir"
         fi
-        download_file "$download_dir" "debian12-arm64.tar.gz" "https://github.com/Glutamat42/Termux-Desktops/releases/download/Debian/debian12-arm64.tar.gz"
+        download_file "$download_dir" "debian12-arm64.tar.gz" "https://github.com/LinuxDroidMaster/Termux-Desktops/releases/download/Debian/debian12-arm64.tar.gz"
         extract_file "$download_dir"
         rm "$download_dir/debian12-arm64.tar.gz"  # remove downloaded file, not needed anymore
         download_start_script "$download_dir"
