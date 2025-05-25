@@ -81,6 +81,8 @@ sudo tar -cv * | xz -9 > debian-trixie-arm64.tar.xz
 To use your archive instead of mine create the chroot folder manually (`/data/local/tmp/chrootDebian$CHROOT_NAME`) and place the archive directly inside it.
 The rootfs archive name has to match `$DOWNLOAD_FILE_NAME` exactly. The script will then skip the download. The archive will be deleted after chroot setup.
 
+Alternatively define `ROOTFS_DOWNLOAD_URL` to contain the full url to your rootfs file before executing the installer script.
+
 
 
 ## 🎨 Customizations (Nerdfonts, XFCE4 terminal color palettes, etc) <a name=customizations-chroot></a>

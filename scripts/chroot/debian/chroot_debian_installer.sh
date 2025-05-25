@@ -1,6 +1,7 @@
 #!/bin/sh
 
-CHROOT_NAME=""  # allows to set a custom part in all names that have to be unique. Allows setting up multiple chroots in parallel. Can be left empty as long as this script is only used once.
+: "${CHROOT_NAME:=''}"  # allows to set a custom part in all names that have to be unique. Allows setting up multiple chroots in parallel. Can be left empty as long as this script is only used once.
+: "${ROOTFS_DOWNLOAD_URL:='https://github.com/Glutamat42/Termux-Desktops/releases/download/debian-trixie-rootfs/debian-trixie-arm64.tar.xz'}"
 DOWNLOAD_FILE_NAME="debian-trixie-arm64.tar.xz"
 DEBIANPATH="/data/local/tmp/chrootDebian$CHROOT_NAME"
 SYSTEM_CMD_START_CHROOT="start_debian$CHROOT_NAME"
@@ -205,7 +206,7 @@ main() {
             mkdir -p "$download_dir"
             success "Created directory: $download_dir"
         fi
-        download_file "$download_dir" "$DOWNLOAD_FILE_NAME" "https://github.com/Glutamat42/Termux-Desktops/releases/download/debian-trixie-rootfs/debian-trixie-arm64.tar.xz"
+        download_file "$download_dir" "$DOWNLOAD_FILE_NAME" "$ROOTFS_DOWNLOAD_URL"
         extract_file "$download_dir"
         rm "$download_dir/$DOWNLOAD_FILE_NAME"  # remove downloaded file, not needed anymore
         download_start_script "$download_dir"
