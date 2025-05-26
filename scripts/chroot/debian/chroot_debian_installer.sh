@@ -62,11 +62,11 @@ download_start_script() {
         echo -e "\e[1;33m[!] Script already exists: /data/local/tmp/start_debian$CHROOT_NAME.sh\e[0m"
         echo -e "\e[1;33m[!] Skipping download...\e[0m"
     else
-        wget -O "/data/local/tmp/start_debian$CHROOT_NAME.sh" "https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/chroot/debian/start_debian.sh"
+        sudo wget -O "/data/local/tmp/start_debian$CHROOT_NAME.sh" "https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/chroot/debian/start_debian.sh"
         if [ $? -eq 0 ]; then
             success "Script downloaded successfully: /data/local/tmp/start_debian$CHROOT_NAME.sh"
             progress "Setting script permissions..."
-            chmod +x "/data/local/tmp/start_debian$CHROOT_NAME.sh"
+            sudo chmod +x "/data/local/tmp/start_debian$CHROOT_NAME.sh"
             success "Script permissions set"
         else
             echo -e "\e[1;31m[!] Error downloading script. Exiting...\e[0m"
@@ -130,14 +130,15 @@ configure_debian_chroot() {
     CHROOT_USER_PASSWORD=$(openssl passwd -6 "$CHROOT_USER_PASSWORD")
 
     # Add the user
-    busybox chroot $DEBIANPATH /bin/su - root -c "adduser --gecos "" --password $CHROOT_USER_PASSWORD $CHROOT_USER_NAME"
+    busybox chroot $DEBIANPATH /bin/su - root -c "adduser --gecos "" --disabled-password $CHROOT_USER_NAME"
+    busybox chroot "$DEBIANPATH" /bin/su - root -c "usermod -p \"\$(openssl passwd -6 '$CHROOT_USER_PASSWORD')\" '$CHROOT_USER_NAME'"
 
     # Add user to sudoers
     progress "Configuring sudo permissions..."
     busybox chroot $DEBIANPATH /bin/su - root -c "echo '$CHROOT_USER_NAME ALL=(ALL:ALL) ALL' >> /etc/sudoers"
 
     progress "Configuring user permissions (groups)"
-    busybox chroot $DEBIANPATH /bin/su - root -c "usermod -aG aid_inet external_storage media_rw $CHROOT_USER_NAME"
+    busybox chroot $DEBIANPATH /bin/su - root -c "usermod -aG aid_inet,external_storage,media_rw $CHROOT_USER_NAME"
 
     success "User account set up and sudo permissions configured"
 
@@ -179,20 +180,21 @@ install_openbox() {
 
 create_termux_script() {
     echo "#!/bin/sh
-    /data/local/tmp/start_debian$CHROOT_NAME.sh" | sudo tee /data/data/com.termux/files/usr/bin/$SYSTEM_CMD_START_CHROOT > /dev/null
+[ "$(id -u)" -ne 0 ] && echo "This script must be run as root." && exit 1
+/data/local/tmp/start_debian$CHROOT_NAME.sh" | sudo tee /data/data/com.termux/files/usr/bin/$SYSTEM_CMD_START_CHROOT > /dev/null
     sudo chmod +x /data/data/com.termux/files/usr/bin/$SYSTEM_CMD_START_CHROOT
 }
 
 
-modify_startfile_with_username() {
-    success "Set start_debian.sh file with user name..."
-    sed -i "s/REPLACEME_CHROOT_USERNAME/$CHROOT_USER_NAME/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
-    sed -i "s/REPLACEME_START_DESKTOP_CMD/$START_DESKTOP_CMD/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
-    sed -i "s/REPLACEME_DEBIANPATH/$DEBIANPATH/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
+set_startfile_variables() {
+    success "Set Variables in start_debian$CHROOT_NAME.sh file"
+    sudo sed -i "s/REPLACEME_CHROOT_USERNAME/$CHROOT_USER_NAME/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
+    sudo sed -i "s/REPLACEME_START_DESKTOP_CMD/$START_DESKTOP_CMD/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
+    sudo sed -i "s/REPLACEME_DEBIANPATH/$DEBIANPATH/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
 }
 
 print_finish_msg() {
-    success "Setup finished. Run 'hash -r' once and then start chroot with $SYSTEM_CMD_START_CHROOT"
+    success "Setup finished. Start chroot with $SYSTEM_CMD_START_CHROOT"
 }
 
 # Main function
@@ -211,7 +213,8 @@ main() {
         rm "$download_dir/$DOWNLOAD_FILE_NAME"  # remove downloaded file, not needed anymore
         download_start_script "$download_dir"
         configure_debian_chroot
-        modify_startfile_with_username
+        set_startfile_variables
+        create_termux_script
         print_finish_msg
     fi
 }

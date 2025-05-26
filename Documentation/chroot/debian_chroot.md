@@ -52,9 +52,21 @@ wget https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/c
 
 * Run it with sudo privileges from Termux: 
 ```
-chmod +x chroot_debian_installer.sh
-su -c "./chroot_debian_installer.sh"
+su -c "/bin/sh ./chroot_debian_installer.sh"
 ```
+
+### Further automate setup
+It is possible to further automate the setup through environment variables. Usage of all variables is optional.
+As of now this will not, depending on the desktop environment you choose, fully automate the installation script.
+
+| Variable | Description |
+|----------|-------------|
+|CHROOT_NAME|Set if installing multitple chroots using this script. Will be used everywhere where names have to be unique.|
+|ROOTFS_DOWNLOAD_URL|Set a custom URL for the rootfs archive|
+|CHROOT_USER_NAME|Name of your user in the chroot instance|
+|CHROOT_USER_PASSWORD|Passwowrt of your user in the chroot instance|
+
+Usage example: `su -c "CHROOT_USER_NAME=mario CHROOT_USER_PASSWORD=secret /bin/sh ./chroot_debian_installer.sh"`
 
 ---  
 <br>
