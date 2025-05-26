@@ -23,8 +23,9 @@
 
 
 1. First you need to have your device <u>rooted</u>.
-2. You need to flash [Busybox](https://github.com/Magisk-Modules-Alt-Repo/BuiltIn-BusyBox/releases) with Magisk.
-3. Then you need to install the following packages in Termux: 
+2. Enable "Beschränkung für Unterprozesse deaktivieren" in developer settings
+3. You need to flash [Busybox](https://github.com/Magisk-Modules-Alt-Repo/BuiltIn-BusyBox/releases) with Magisk.
+4. Then you need to install the following packages in Termux: 
 
 ```
 pkg update

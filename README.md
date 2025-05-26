@@ -2,6 +2,8 @@
 
 This is the documentation on how i set up my desktop environment on my Xiaomi Pad 6 (pipa) with PixelOS. It's based on DroidMasters [Termux-Desktops](https://github.com/LinuxDroidMaster/Termux-Desktops) project.
 
+
+## Evaluation of Approaches
 I am aiming on being able to actually work on my Tablet. For example i want to be able to debug a software issue requiring a proper IDE.
 
 My evaluation for the 4 possible Approaches
@@ -12,7 +14,7 @@ My evaluation for the 4 possible Approaches
 - Chroot: Well... has to work as it's the only option left. Setup had some issues, but i got it working.
 
 
-# General
+## General
 Pixel OS 15, Magisk for root.
 
 > [!WARNING]
@@ -26,6 +28,8 @@ pkg remove tsu && pkg i sudo
 ```
 
 
-# Termux X11
+### Termux X11
 Display scaling 200%, Touch input: direct
 
+# chroot Guide
+[My Debian Trixie chroot guide](./Documentation/chroot/debian_chroot.md)
