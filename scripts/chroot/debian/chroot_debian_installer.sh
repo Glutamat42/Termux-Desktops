@@ -173,14 +173,14 @@ install_xfce4() {
 # Function to install openbox window manager
 install_openbox() {
     progress "Installing KDE..."
-    busybox chroot $DEBIANPATH /bin/su - root -c 'apt-get update && apt-get install dbus-x11 xorg openbox -y'
+    busybox chroot $DEBIANPATH /bin/su - root -c "apt-get update && apt-get install dbus-x11 xorg openbox -y && groupadd console && usermod -aG console $CHROOT_USER_NAME"
     START_DESKTOP_CMD="startx"
 }
 
 create_termux_script() {
     script_path=/data/data/com.termux/files/usr/bin/"$SYSTEM_CMD_START_CHROOT"
     tee $script_path > /dev/null << 'EOF'
-#!/bin/sh
+#!/bin/bash
 [ "$(id -u)" -e 0 ] && echo "This script must not be run as root." && exit 1
 
 CHROOT_NAME=REPLACEME_CHROOT_NAME
@@ -210,7 +210,7 @@ sudo bash -c /data/local/tmp/start_debian$CHROOT_NAME.sh
 EOF
     chmod +x $script_path
     sed -i "s/REPLACEME_CHROOT_NAME/$CHROOT_NAME/g" $script_path
-    sed -i "s/REPLACEME_DEBIANPATH/$DEBIANPATH/g" $script_path
+    sed -i "s#REPLACEME_DEBIANPATH#$DEBIANPATH#g" $script_path
 }
 
 
@@ -232,7 +232,10 @@ main() {
         goodbye
     else
         download_dir="$DEBIANPATH"
-        if [ ! -d "$download_dir" ]; then
+        if [ -d "$download_dir" ]; then
+            echo -e "chroot path $DEBIANPATH alreaedy exists"
+            goodbye
+        else
             mkdir -p "$download_dir"
             success "Created directory: $download_dir"
         fi
