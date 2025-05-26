@@ -134,10 +134,10 @@ configure_debian_chroot() {
 
     # Add user to sudoers
     progress "Configuring sudo permissions..."
-    busybox chroot $DEBIANPATH /bin/su - root -c "echo '$USERNAME ALL=(ALL:ALL) ALL' >> /etc/sudoers"
+    busybox chroot $DEBIANPATH /bin/su - root -c "echo '$CHROOT_USER_NAME ALL=(ALL:ALL) ALL' >> /etc/sudoers"
 
     progress "Configuring user permissions (groups)"
-    busybox chroot $DEBIANPATH /bin/su - root -c "usermod -aG aid_inet external_storage media_rw $USERNAME"
+    busybox chroot $DEBIANPATH /bin/su - root -c "usermod -aG aid_inet external_storage media_rw $CHROOT_USER_NAME"
 
     success "User account set up and sudo permissions configured"
 
@@ -186,7 +186,7 @@ create_termux_script() {
 
 modify_startfile_with_username() {
     success "Set start_debian.sh file with user name..."
-    sed -i "s/REPLACEME_CHROOT_USERNAME/$USERNAME/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
+    sed -i "s/REPLACEME_CHROOT_USERNAME/$CHROOT_USER_NAME/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
     sed -i "s/REPLACEME_START_DESKTOP_CMD/$START_DESKTOP_CMD/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
     sed -i "s/REPLACEME_DEBIANPATH/$DEBIANPATH/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
 }
