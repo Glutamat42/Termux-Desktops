@@ -173,7 +173,7 @@ install_xfce4() {
 # Function to install openbox window manager
 install_openbox() {
     progress "Installing KDE..."
-    busybox chroot $DEBIANPATH /bin/su - root -c "apt-get update && apt-get install dbus-x11 xorg openbox -y && groupadd console && usermod -aG console $CHROOT_USER_NAME"
+    busybox chroot $DEBIANPATH /bin/su - root -c "apt-get update && apt-get install dbus-x11 xorg openbox -y"
     START_DESKTOP_CMD="startx"
 }
 
@@ -206,7 +206,7 @@ pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymou
 # Start virgl server
 #virgl_test_server_android &
 
-sudo bash -c /data/local/tmp/start_debian$CHROOT_NAME.sh
+su -c /data/local/tmp/start_debian$CHROOT_NAME.sh
 EOF
     chmod +x $script_path
     sed -i "s/REPLACEME_CHROOT_NAME/$CHROOT_NAME/g" $script_path

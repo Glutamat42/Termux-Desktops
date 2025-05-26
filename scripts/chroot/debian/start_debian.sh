@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # REPLACEME strings will be replaced by installer script automatically
 DEBIANPATH=REPLACEME_DEBIANPATH
