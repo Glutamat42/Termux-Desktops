@@ -42,13 +42,13 @@ download_file() {
 # Function to extract file
 extract_file() {
     progress "Extracting file..."
-    if [ -d "$1/debian12-arm64" ]; then
-        echo -e "\e[1;33m[!] Directory already exists: $1/debian12-arm64\e[0m"
+    if [ -d "$1/debian-arm64" ]; then
+        echo -e "\e[1;33m[!] Directory already exists: $1/debian-arm64\e[0m"
         echo -e "\e[1;33m[!] Skipping extraction...\e[0m"
     else
         tar xpvf "$1/$DOWNLOAD_FILE_NAME" -C "$1" --numeric-owner >/dev/null 2>&1
         if [ $? -eq 0 ]; then
-            success "File extracted successfully: $1/debian12-arm64"
+            success "File extracted successfully: $1/debian-arm64"
         else
             echo -e "\e[1;31m[!] Error extracting file. Exiting...\e[0m"
             goodbye
@@ -60,13 +60,13 @@ download_start_script() {
     progress "Downloading script..."
     if [ -e "/data/local/tmp/start_debian$CHROOT_NAME.sh" ]; then
         echo -e "\e[1;33m[!] Script already exists: /data/local/tmp/start_debian$CHROOT_NAME.sh\e[0m"
-        echo -e "\e[1;33m[!] Skipping download...\e[0m"
+        goodbye
     else
-        sudo wget -O "/data/local/tmp/start_debian$CHROOT_NAME.sh" "https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/chroot/debian/start_debian.sh"
+        wget -O "/data/local/tmp/start_debian$CHROOT_NAME.sh" "https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/chroot/debian/start_debian.sh"
         if [ $? -eq 0 ]; then
             success "Script downloaded successfully: /data/local/tmp/start_debian$CHROOT_NAME.sh"
             progress "Setting script permissions..."
-            sudo chmod +x "/data/local/tmp/start_debian$CHROOT_NAME.sh"
+            chmod +x "/data/local/tmp/start_debian$CHROOT_NAME.sh"
             success "Script permissions set"
         else
             echo -e "\e[1;31m[!] Error downloading script. Exiting...\e[0m"
@@ -127,7 +127,6 @@ configure_debian_chroot() {
     progress "Setting up user account..."
     [ -z "$CHROOT_USER_NAME" ] && read -p "Enter username for chroot environment: " CHROOT_USER_NAME
     [ -z "$CHROOT_USER_PASSWORD" ] && read -s -p "Enter password: " CHROOT_USER_PASSWORD && echo
-    CHROOT_USER_PASSWORD=$(openssl passwd -6 "$CHROOT_USER_PASSWORD")
 
     # Add the user
     busybox chroot $DEBIANPATH /bin/su - root -c "adduser --gecos "" --disabled-password $CHROOT_USER_NAME"
@@ -179,18 +178,47 @@ install_openbox() {
 }
 
 create_termux_script() {
-    echo "#!/bin/sh
-[ "$(id -u)" -ne 0 ] && echo "This script must be run as root." && exit 1
-/data/local/tmp/start_debian$CHROOT_NAME.sh" | sudo tee /data/data/com.termux/files/usr/bin/$SYSTEM_CMD_START_CHROOT > /dev/null
-    sudo chmod +x /data/data/com.termux/files/usr/bin/$SYSTEM_CMD_START_CHROOT
+    script_path=/data/data/com.termux/files/usr/bin/"$SYSTEM_CMD_START_CHROOT"
+    tee $script_path > /dev/null << 'EOF'
+#!/bin/sh
+[ "$(id -u)" -e 0 ] && echo "This script must not be run as root." && exit 1
+
+CHROOT_NAME=REPLACEME_CHROOT_NAME
+DEBIANPATH=REPLACEME_DEBIANPATH
+
+# Kill all old prcoesses
+killall -9 termux-x11 Xwayland pulseaudio virgl_test_server_android termux-wake-lock
+
+## Start Termux X11
+am start --user 0 -n com.termux.x11/com.termux.x11.MainActivity
+
+sudo bash -c "busybox mount --bind $PREFIX/tmp $DEBIANPATH/tmp"
+sudo bash -c "busybox chroot $DEBIANPATH /bin/su - root -c 'chmod 777 /tmp'"  # tmp had invalid permissions after first setup. There is probably a easier way to solve this (without chrot), but i know this works.
+
+XDG_RUNTIME_DIR=${TMPDIR} termux-x11 :0 -ac &
+
+sleep 3
+
+# Start Pulse Audio of Termux
+pulseaudio --start --load="module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1" --exit-idle-time=-1
+pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1
+
+# Start virgl server
+#virgl_test_server_android &
+
+sudo bash -c /data/local/tmp/start_debian$CHROOT_NAME.sh
+EOF
+    chmod +x $script_path
+    sed -i "s/REPLACEME_CHROOT_NAME/$CHROOT_NAME/g" $script_path
+    sed -i "s/REPLACEME_DEBIANPATH/$DEBIANPATH/g" $script_path
 }
 
 
 set_startfile_variables() {
     success "Set Variables in start_debian$CHROOT_NAME.sh file"
-    sudo sed -i "s/REPLACEME_CHROOT_USERNAME/$CHROOT_USER_NAME/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
-    sudo sed -i "s/REPLACEME_START_DESKTOP_CMD/$START_DESKTOP_CMD/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
-    sudo sed -i "s/REPLACEME_DEBIANPATH/$DEBIANPATH/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
+    sed -i "s/REPLACEME_CHROOT_USERNAME/$CHROOT_USER_NAME/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
+    sed -i "s/REPLACEME_START_DESKTOP_CMD/$START_DESKTOP_CMD/g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
+    sed -i "s#REPLACEME_DEBIANPATH#$DEBIANPATH#g" "$DEBIANPATH/../start_debian$CHROOT_NAME.sh"
 }
 
 print_finish_msg() {
