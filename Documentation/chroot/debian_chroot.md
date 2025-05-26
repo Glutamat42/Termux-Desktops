@@ -52,11 +52,8 @@ wget https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/c
 
 * Run it with sudo privileges from Termux: 
 ```
-su
-```
-```
 chmod +x chroot_debian_installer.sh
-sh chroot_debian_installer.sh
+su -c "./chroot_debian_installer.sh"
 ```
 
 ---  

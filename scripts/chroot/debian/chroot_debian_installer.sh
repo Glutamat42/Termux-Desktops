@@ -1,7 +1,7 @@
 #!/bin/sh
 
-: "${CHROOT_NAME:=''}"  # allows to set a custom part in all names that have to be unique. Allows setting up multiple chroots in parallel. Can be left empty as long as this script is only used once.
-: "${ROOTFS_DOWNLOAD_URL:='https://github.com/Glutamat42/Termux-Desktops/releases/download/debian-trixie-rootfs/debian-trixie-arm64.tar.xz'}"
+: "${CHROOT_NAME:=}"  # allows to set a custom part in all names that have to be unique. Allows setting up multiple chroots in parallel. Can be left empty as long as this script is only used once.
+: "${ROOTFS_DOWNLOAD_URL:=https://github.com/Glutamat42/Termux-Desktops/releases/download/debian-trixie-rootfs/debian-trixie-arm64.tar.xz}"
 DOWNLOAD_FILE_NAME="debian-trixie-arm64.tar.xz"
 DEBIANPATH="/data/local/tmp/chrootDebian$CHROOT_NAME"
 SYSTEM_CMD_START_CHROOT="start_debian$CHROOT_NAME"
@@ -102,7 +102,6 @@ configure_debian_chroot() {
     mkdir $DEBIANPATH/sdcard
     busybox mount --bind /sdcard $DEBIANPATH/sdcard
     
-    busybox chroot $DEBIANPATH /bin/su - root -c 'apt update -y && apt upgrade -y'
     busybox chroot $DEBIANPATH /bin/su - root -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf; \
     echo "127.0.0.1 localhost" > /etc/hosts; \
     groupadd -g 3003 aid_inet; \
@@ -112,9 +111,9 @@ configure_debian_chroot() {
     groupadd -g 1023 media_rw; \
     usermod -g 3003 -G 3003,3004 -a _apt; \
     usermod -G 3003 -a root; \
-    apt update; \
-    apt upgrade; \
-    apt install nano vim net-tools sudo git; \
+    apt-get update; \
+    apt-get dist-upgrade; \
+    apt-get install -y nano vim net-tools sudo git; \
     echo "Debian chroot environment configured"'
 
     if [ $? -eq 0 ]; then
@@ -126,11 +125,12 @@ configure_debian_chroot() {
 
     # Prompt for username
     progress "Setting up user account..."
-    echo -n "Enter username for Debian chroot environment: "
-    read USERNAME
+    [ -z "$CHROOT_USER_NAME" ] && read -p "Enter username for chroot environment: " CHROOT_USER_NAME
+    [ -z "$CHROOT_USER_PASSWORD" ] && read -s -p "Enter password: " CHROOT_USER_PASSWORD && echo
+    CHROOT_USER_PASSWORD=$(openssl passwd -6 "$CHROOT_USER_PASSWORD")
 
     # Add the user
-    busybox chroot $DEBIANPATH /bin/su - root -c "adduser $USERNAME"
+    busybox chroot $DEBIANPATH /bin/su - root -c "adduser --gecos "" --password $CHROOT_USER_PASSWORD $CHROOT_USER_NAME"
 
     # Add user to sudoers
     progress "Configuring sudo permissions..."
@@ -166,14 +166,14 @@ configure_debian_chroot() {
 # Function to install XFCE4 desktop environment
 install_xfce4() {
     progress "Installing XFCE4..."
-    busybox chroot $DEBIANPATH /bin/su - root -c 'apt update -y && apt install dbus-x11 xfce4 xfce4-terminal -y'
+    busybox chroot $DEBIANPATH /bin/su - root -c 'apt-get update && apt-get install dbus-x11 xfce4 xfce4-terminal -y'
     START_DESKTOP_CMD="startxfce4"
 }
 
 # Function to install openbox window manager
 install_openbox() {
     progress "Installing KDE..."
-    busybox chroot $DEBIANPATH /bin/su - root -c 'apt update -y && apt install dbus-x11 xorg openbox -y'
+    busybox chroot $DEBIANPATH /bin/su - root -c 'apt-get update && apt-get install dbus-x11 xorg openbox -y'
     START_DESKTOP_CMD="startx"
 }
 
