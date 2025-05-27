@@ -29,9 +29,10 @@
 
 ```
 pkg update
-pkg install x11-repo root-repo termux-x11-nightly
+pkg install x11-repo root-repo 
+pkg i termux-x11-nightly
 pkg update
-pkg install pulseaudio
+pkg install pulseaudio sudo wget
 ```
 
 

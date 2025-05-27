@@ -173,15 +173,15 @@ install_xfce4() {
 # Function to install openbox window manager
 install_openbox() {
     progress "Installing KDE..."
-    busybox chroot $DEBIANPATH /bin/su - root -c "apt-get update && apt-get install dbus-x11 xorg openbox -y"
-    START_DESKTOP_CMD="startx"
+    busybox chroot $DEBIANPATH /bin/su - root -c "apt-get update && apt-get install dbus-x11 openbox -y"
+    START_DESKTOP_CMD="openbox-session"
 }
 
 create_termux_script() {
     script_path=/data/data/com.termux/files/usr/bin/"$SYSTEM_CMD_START_CHROOT"
     tee $script_path > /dev/null << 'EOF'
 #!/bin/bash
-[ "$(id -u)" -e 0 ] && echo "This script must not be run as root." && exit 1
+[ "$(id -u)" -eq 0 ] && echo "This script must not be run as root." && exit 1
 
 CHROOT_NAME=REPLACEME_CHROOT_NAME
 DEBIANPATH=REPLACEME_DEBIANPATH
