@@ -40,7 +40,27 @@ sudo taskset 0,1 qemu-system-aarch64 -m 1536 -smp 2 -nographic -bios $PREFIX/sha
 
 
 # now in vm
+# ssh
+# ssh server has to be installed. i think this is default
+sed -i '/^#\?AllowTcpForwarding/s/.*/AllowTcpForwarding yes/' /etc/ssh/sshd_config
+rc-service sshd restart
+
+# docker
 sed -i '/community/s/^#//' /etc/apk/repositories
 apk add docker
+# docker allow network connections
+mkdir -p /etc/docker
+echo '{"hosts": ["unix:///var/run/docker.sock", "tcp://127.0.0.1:2375"]}' | tee /etc/docker/daemon.json > /dev/null
+rc-service docker restart
+# docker service activate
 rc-service docker start
 rc-update add docker default
+
+
+todo:
+ssh keygen on chroot
+pubkey to vm
+to connect: on chroot
+ssh -NL 2375:localhost:2375 user@<vm-ip-or-host:2222>
+export DOCKER_HOST=tcp://localhost:2375
+docker ps
