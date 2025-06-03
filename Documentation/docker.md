@@ -13,10 +13,21 @@ Docker allows connecting to a remote docker service. In theory this should resul
 
 As i will do this on my phone i will do it directly in termux. With some smal adjustments it is possible to do it in chroot on the tablet.
 
-Install qemu: pkg i qemu-system-aarch64-headless qemu-utils
-
 # if /dev/kvm does not exist, it is possible to continue this guide, but the performance will be very bad.
-# in the qemu-system-aarch64 commands remove -accel=kvm and change -cpu=host to -cpu=max
+# In this case, in the qemu-system-aarch64 commands remove -accel=kvm and change -cpu=host to -cpu=max
+
+## generate ssh key
+Communication with the docker daemon inside the vm will happen via ssh. On the Tablet run
+
+```bash
+ssh-keygen -t ed25519
+```
+
+The generated pubkey will be required later when setting up the vm.
+
+## initial setup on qemu device
+```bash
+pkg i qemu-system-aarch64-headless qemu-utils
 
 mkdir qemu-docker
 cd qemu-docker
@@ -36,12 +47,20 @@ sudo taskset 0,1 qemu-system-aarch64 -m 1536 -smp 2 -nographic -bios $PREFIX/sha
 # start vm from now on with the same command but without -cdrom
 
 # login as root. root has no password
-# install with setup-alpine. select a disk when prompted (default none) and installation method "sys"
+echo install with setup-alpine. select a disk when prompted (default none) and installation method "sys"
+```
 
+## set up the vm
+Run these commands inside the vm
+```bash
+read -p "pubkey generated on tablet: " PUBKEY
 
-# now in vm
 # ssh
 # ssh server has to be installed. i think this is default
+mkdir -p ~/.ssh
+echo $PUBKEY > ~/.ssh/authorized_keys 
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
 sed -i '/^#\?AllowTcpForwarding/s/.*/AllowTcpForwarding yes/' /etc/ssh/sshd_config
 rc-service sshd restart
 
@@ -55,11 +74,10 @@ rc-service docker restart
 # docker service activate
 rc-service docker start
 rc-update add docker default
-
+```
 
 todo:
-ssh keygen on chroot
-pubkey to vm
+run command on phone
 to connect: on chroot
 ssh -NL 2375:localhost:2375 user@<vm-ip-or-host:2222>
 export DOCKER_HOST=tcp://localhost:2375
