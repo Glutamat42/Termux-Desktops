@@ -94,7 +94,8 @@ The rootfs archive name has to match `$DOWNLOAD_FILE_NAME` exactly. The script w
 
 Alternatively define `ROOTFS_DOWNLOAD_URL` to contain the full url to your rootfs file before executing the installer script.
 
-
+## Run AppImages
+/dev/fuse is owned by root:root. Run AppImages with sudo.
 
 ## 🎨 Customizations (Nerdfonts, XFCE4 terminal color palettes, etc) <a name=customizations-chroot></a>
 * XFCE4 color palettes:

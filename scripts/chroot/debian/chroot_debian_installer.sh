@@ -113,7 +113,7 @@ configure_debian_chroot() {
     usermod -G 3003 -a root; \
     apt-get update; \
     apt-get dist-upgrade; \
-    apt-get install -y nano vim net-tools sudo git; \
+    apt-get install -y nano net-tools sudo libfuse2 zlib1g-dev; \
     echo "Debian chroot environment configured"'
 
     if [ $? -eq 0 ]; then
