@@ -7,30 +7,49 @@ As of now there is no kvm support on the Xiaomi Pad 6 making the VM too slow. Ex
 
 As i absolutely require docker support i have chosen to run it on my phone (Google Pixel 6 pro). It has kvm support. This has the additional advantage of saving memory on the Tablet.
 
-Docker allows connecting to a remote docker service. In theory this should result in being able to work with docker like it is running locally. I do not yet know whether or not this actually works for my development scenario.
+Docker allows connecting to a remote docker service. This allows being able to work with docker like it is running locally with some limitations. Most notably it is not possible to bind mount local directories into containers.
 
 # Setting up docker
+> [!IMPORTANT]
+> I wrote this guide during my work in getting this to work but I did not verify the guide afterwards. 
+> It is to be expected to encounter some issues.
+
 
 As i will do this on my phone i will do it directly in termux. With some smal adjustments it is possible to do it in chroot on the tablet.
 
-# if /dev/kvm does not exist, it is possible to continue this guide, but the performance will be very bad.
+# if /dev/kvm does not exist, it is possible to continue this guide, but the performance will be poor.
 # In this case, in the qemu-system-aarch64 commands remove -accel=kvm and change -cpu=host to -cpu=max
 
-## generate ssh key
-Communication with the docker daemon inside the vm will happen via ssh. On the Tablet run
+## Initial setup on chroot
 
 ```bash
 ssh-keygen -t ed25519
+sudo apt-get install docker-cli
 ```
+
 
 The generated pubkey will be required later when setting up the vm.
 
 ## initial setup on qemu device
 ```bash
+$QEMU_COMMAND="taskset 0,1 qemu-system-aarch64 -m 1536 -smp 2 -nographic -bios $PREFIX/share/qemu/edk2-aarch64-code.fd -drive if=virtio,file=docker.qcow2,format=qcow2 -netdev user,id=net0,hostfwd=tcp::2222-:22 -device virtio-net-device,netdev=net0 -machine virt -accel kvm -cpu host"
+
 pkg i qemu-system-aarch64-headless qemu-utils
 
 mkdir qemu-docker
 cd qemu-docker
+
+# generate start script for starting the vm later
+cat << EOF > start.sh
+#!/bin/bash
+echo Potential ips: 
+sudo ip -o -4 addr show | grep 'wlan' | awk '{print $2, $4}' | sed 's#/.*##'
+echo
+echo Exit qemu by logging in and then running \"poweroff\" or via qemu: ctrl + a then x
+sleep 5
+sudo $QEMU_COMMAND
+EOF
+chmod +x start.sh
 
 qemu-img create -f qcow2 docker.qcow2 10G
 
@@ -41,13 +60,13 @@ wget -O alpine.iso https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/aarch64/
 # using cores 0,1,2,3 should be more efficient (most efficient cores)
 # using cores 4,5 or 6,7 should be (way) faster, but likely consume more power and obviously allows less parallel tasks (less cores)  
 # using a mixture results in the vm not starting
-sudo taskset 0,1 qemu-system-aarch64 -m 1536 -smp 2 -nographic -bios $PREFIX/share/qemu/edk2-aarch64-code.fd -drive if=virtio,file=docker.qcow2,format=qcow2 -cdrom alpine.iso -netdev user,id=net0,hostfwd=tcp::2222-:22 -device virtio-net-device,netdev=net0 -machine virt -accel kvm -cpu host
+sudo $QEMU_COMMAND -cdrom alpine.iso
 
 # exiting vm: shutdown: poweroff, or via qemu: ctrl + a then x
 # start vm from now on with the same command but without -cdrom
 
 # login as root. root has no password
-echo install with setup-alpine. select a disk when prompted (default none) and installation method "sys"
+echo install with setup-alpine. select a disk when prompted (default none) and installation method \"sys\"
 ```
 
 ## set up the vm
@@ -76,9 +95,29 @@ rc-service docker start
 rc-update add docker default
 ```
 
-todo:
-run command on phone
-to connect: on chroot
-ssh -NL 2375:localhost:2375 user@<vm-ip-or-host:2222>
+## Run docker VM
+After setup, if not shut down, the vm is already running. To start it after shutting it down, run 
+
+```bash
+qemu-docker/start.sh on termux
+```
+
+It should print the IPs of all wifi interfaces, one of them should be the IP you'll need later to connect to the docker daemon.
+
+
+## connect to remote docker
+The Docker network hodst does not provide authentication, therefore the connection is tunneld through ssh. The private key should already be in the correct location, it was generated above by the `ssh-keygen` command.
+
+Run the below command to expose the docker daemon on localhost:2375 after inserting the correct IP.
+```bash
+ssh -NL 2375:localhost:2375 user@<vm-ip-or-host>:2222
+```
+
+Then execute 
+```bash
 export DOCKER_HOST=tcp://localhost:2375
-docker ps
+```
+in the terminal you want to execute docker commands in. Now it is possible to run docker commands, eg `docker ps`
+
+## Access ports of docker containers
+Docker services are only accessible in the vm. To access them from the Tablet they have to be forwarded simmilar tot the port 2375 forward. Alternatively it is possible to start a socks proxy with SSH (`ssh -D 8080 user@<vm-ip-or-host>:2222`)
