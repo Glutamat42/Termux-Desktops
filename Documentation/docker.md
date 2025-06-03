@@ -31,6 +31,12 @@ sudo apt-get install docker-cli
 The generated pubkey will be required later when setting up the vm.
 
 ## initial setup on qemu device
+About the qemu command:
+- sudo required because of missing permissions of normal user
+- taskset required because of kvm bug might be fixed with kernel 6.3 https://github.com/Joshua-Riek/ubuntu-rockchip/issues/731
+  - using cores 0,1,2,3 should be more efficient (most efficient cores)
+  - using cores 4,5 or 6,7 should be (way) faster, but likely consume more power and obviously allows less parallel tasks (less cores) using a mixture results in the vm not starting
+
 ```bash
 $QEMU_COMMAND="taskset 0,1 qemu-system-aarch64 -m 1536 -smp 2 -nographic -bios $PREFIX/share/qemu/edk2-aarch64-code.fd -drive if=virtio,file=docker.qcow2,format=qcow2 -netdev user,id=net0,hostfwd=tcp::2222-:22 -device virtio-net-device,netdev=net0 -machine virt -accel kvm -cpu host"
 
@@ -55,11 +61,6 @@ qemu-img create -f qcow2 docker.qcow2 10G
 
 wget -O alpine.iso https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/aarch64/alpine-virt-3.21.3-aarch64.iso
 
-# sudo required because of missing permissions of normal user
-# taskset required because of kvm bug might be fixed with kernel 6.3 https://github.com/Joshua-Riek/ubuntu-rockchip/issues/731
-# using cores 0,1,2,3 should be more efficient (most efficient cores)
-# using cores 4,5 or 6,7 should be (way) faster, but likely consume more power and obviously allows less parallel tasks (less cores)  
-# using a mixture results in the vm not starting
 sudo $QEMU_COMMAND -cdrom alpine.iso
 
 # exiting vm: shutdown: poweroff, or via qemu: ctrl + a then x
@@ -110,7 +111,7 @@ The Docker network hodst does not provide authentication, therefore the connecti
 
 Run the below command to expose the docker daemon on localhost:2375 after inserting the correct IP.
 ```bash
-ssh -NL 2375:localhost:2375 user@<vm-ip-or-host>:2222
+ssh -NL 2375:localhost:2375 root@<vm-ip-or-host>:2222
 ```
 
 Then execute 
@@ -120,4 +121,4 @@ export DOCKER_HOST=tcp://localhost:2375
 in the terminal you want to execute docker commands in. Now it is possible to run docker commands, eg `docker ps`
 
 ## Access ports of docker containers
-Docker services are only accessible in the vm. To access them from the Tablet they have to be forwarded simmilar tot the port 2375 forward. Alternatively it is possible to start a socks proxy with SSH (`ssh -D 8080 user@<vm-ip-or-host>:2222`)
+Docker services are only accessible in the vm. To access them from the Tablet they have to be forwarded simmilar tot the port 2375 forward. Alternatively it is possible to start a socks proxy with SSH (`ssh -D 8080 root@<vm-ip-or-host>:2222`)
