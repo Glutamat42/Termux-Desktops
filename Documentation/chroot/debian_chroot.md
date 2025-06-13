@@ -39,7 +39,7 @@ pkg install pulseaudio sudo wget
 ---  
 <br>
 
-## 💻🍥 Setting Debian chroot - automatic installer <a name=debian-chroot></a>
+## 💻🍥 Setting up Debian chroot - automatic installer <a name=debian-chroot></a>
 
 Please read first [#First Steps section](#first-steps-chroot)
 
@@ -56,7 +56,7 @@ wget https://raw.githubusercontent.com/Glutamat42/Termux-Desktops/main/scripts/c
 su -c "/bin/sh ./chroot_debian_installer.sh"
 ```
 
-### Further automate setup
+### Partially unattended setup
 It is possible to further automate the setup through environment variables. Usage of all variables is optional.
 As of now this will not, depending on the desktop environment you choose, fully automate the installation script.
 
@@ -97,22 +97,12 @@ Alternatively define `ROOTFS_DOWNLOAD_URL` to contain the full url to your rootf
 ## Run AppImages
 /dev/fuse is owned by root:root. Run AppImages with sudo.
 
-## 🎨 Customizations (Nerdfonts, XFCE4 terminal color palettes, etc) <a name=customizations-chroot></a>
-* XFCE4 color palettes:
-  * [Dracula](https://draculatheme.com/xfce4-terminal)
-  * [Nordic](https://github.com/nordtheme/xfce-terminal)     
+## 🎨 Further Customizations<a name=customizations-chroot></a>
 
-* Installing NerdFonts on chroot env (Debian, Ubuntu) from this [post](https://medium.com/@almatins/install-nerdfont-or-any-fonts-using-the-command-line-in-debian-or-other-linux-f3067918a88c):
-```
-sudo apt install wget unzip -y
-```
-```
-wget -P ~/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/JetBrainsMono.zip \
-&& cd ~/.local/share/fonts \
-&& unzip JetBrainsMono.zip \
-&& rm JetBrainsMono.zip \
-&& fc-cache -fv
-```
+### Getting rid of the Android bottom bar (gesture bar)
+Android shows a pretty useless bar on the bottom called gesture bar. It literally does nothing except being in the way. Trying to click on something at the bottom of the chroot Desktop ... That annoying bar gets in the way. And there is no way to deactivate it in the official settings...
+
+Solution is this Magisk module. Install it and during its setup hide the bottom gesture bar: `https://github.com/DanGLES3/Hide-Navbar`
 
 ---  
 <br>
