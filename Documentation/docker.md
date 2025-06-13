@@ -38,7 +38,7 @@ About the qemu command:
   - using cores 4,5 or 6,7 should be (way) faster, but likely consume more power and obviously allows less parallel tasks (less cores) using a mixture results in the vm not starting
 
 ```bash
-$QEMU_COMMAND="taskset 0,1 qemu-system-aarch64 -m 1536 -smp 2 -nographic -bios $PREFIX/share/qemu/edk2-aarch64-code.fd -drive if=virtio,file=docker.qcow2,format=qcow2 -netdev user,id=net0,hostfwd=tcp::2222-:22 -device virtio-net-device,netdev=net0 -machine virt -accel kvm -cpu host"
+$QEMU_COMMAND="taskset 0,1,2,3 qemu-system-aarch64 -m 2048 -smp 4 -nographic -bios $PREFIX/share/qemu/edk2-aarch64-code.fd -drive if=virtio,file=docker.qcow2,format=qcow2 -netdev user,id=net0,hostfwd=tcp::2222-:22 -device virtio-net-device,netdev=net0 -machine virt -accel kvm -cpu host"
 
 pkg i qemu-system-aarch64-headless qemu-utils
 
@@ -67,7 +67,8 @@ sudo $QEMU_COMMAND -cdrom alpine.iso
 # start vm from now on with the same command but without -cdrom
 
 # login as root. root has no password
-echo install with setup-alpine. select a disk when prompted (default none) and installation method \"sys\"
+echo install with \"setup-alpine\". select a disk when prompted (default none) and installation method \"sys\"
+echo install without swap partition. If forgotten it will be disabled later, but will waste disk space.
 ```
 
 ## set up the vm
@@ -94,6 +95,35 @@ rc-service docker restart
 # docker service activate
 rc-service docker start
 rc-update add docker default
+
+# disable swap if enabled. We do not want that as it is slow and wears down the internal storage
+sudo sed -i '/\bswap\b/d' /etc/fstab
+# enable zram
+apk add zram-init
+
+mem_kb=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+mem_mb=$((mem_kb / 1024))
+
+cat <<EOF > /etc/conf.d/zram-init
+load_on_start=yes
+unload_on_stop=yes
+num_devices=1
+type0=swap
+algo0=zstd
+size0=${mem_mb}
+EOF
+
+rc-update add zram-init
+rc-service zram-init start
+
+cat <<EOF > /etc/sysctl.d/99-zram.conf
+vm.page-cluster=0
+vm.extfrag_threshold=0
+vm.swappiness=100
+EOF
+
+# reboot system to apply all changes
+reboot
 ```
 
 ## Run docker VM
