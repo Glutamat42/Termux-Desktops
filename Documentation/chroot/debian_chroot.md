@@ -123,3 +123,14 @@ Do the same with file 2. The Variable `DEBIANPATH` contains the path for folder 
 > Close the terminal through notification and then force close Termux.
 > Otherwise you will scew up Android and will have to force reboot your device to make it work again.
 
+## Issues
+### ttermux x11 Cannot establish any listening sockets - Make sure an X server isn't already running(EE)
+
+```bash
+rm -rf $TMPDIR/*
+rm -rf $TMPDIR/.*
+```
+
+## XKB: Failed to compile keymap Keyboard initialization failed
+
+This is a known issue in xkeyboard-config version 2.45. Downgrade to version 2.44. You need to get the package from a 3rd party source. This discussions contains such a link (WARNING: random internet source): [Reddit discussion](https://www.reddit.com/r/termux/comments/1l6upzx/termuxx11_error_after_upgrading_to_01190beta3/)
