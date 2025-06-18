@@ -113,7 +113,7 @@ configure_debian_chroot() {
     usermod -G 3003 -a root; \
     apt-get update; \
     apt-get dist-upgrade; \
-    apt-get install -y nano net-tools sudo libfuse2 zlib1g-dev; \
+    apt-get install -y nano net-tools sudo libfuse2 zlib1g-dev tzdata; \
     echo "Debian chroot environment configured"'
 
     if [ $? -eq 0 ]; then
@@ -121,6 +121,19 @@ configure_debian_chroot() {
     else
         echo -e "\e[1;31m[!] Error configuring Debian chroot environment. Exiting...\e[0m"
         goodbye
+    fi
+
+    # Configure timezone to match Android system
+    progress "Configuring timezone to match Android system..."
+    ANDROID_TIMEZONE=$(getprop persist.sys.timezone)
+    if [ -n "$ANDROID_TIMEZONE" ] && [ -f "$DEBIANPATH/usr/share/zoneinfo/$ANDROID_TIMEZONE" ]; then
+        busybox chroot $DEBIANPATH /bin/su - root -c "ln -fs /usr/share/zoneinfo/$ANDROID_TIMEZONE /etc/localtime"
+        busybox chroot $DEBIANPATH /bin/su - root -c "echo '$ANDROID_TIMEZONE' > /etc/timezone"
+        busybox chroot $DEBIANPATH /bin/su - root -c "DEBIAN_FRONTEND=noninteractive dpkg-reconfigure tzdata"
+        success "Timezone set to: $ANDROID_TIMEZONE"
+    else
+        # Do nothing if Android timezone is not available or not found
+        echo -e "\e[1;33m[!] Android timezone not found or not available, keeping system default\e[0m"
     fi
 
     # Prompt for username
