@@ -2,7 +2,7 @@
 
 - Default configuration is 4GB zram. \
   `cat /proc/swaps` \
-  No idea where it is configured
+  Configured in `/vendor/bin/init.qcom.post_boot.sh`, but cant be changed there
 
 - Supported compression algorithms: lzo \
   `cat /sys/block/zram0/comp_algorithm` \
@@ -19,4 +19,19 @@ zramctl --reset /dev/block/zram0
 echo 8192M > /sys/block/zram0/disksize
 mkswap /dev/block/zram0
 swapon /dev/block/zram0
+```
+
+## Automate zram resize with Magisk
+Create a magisk service with the following command in Termux as root: 
+```bash
+cat <<EOF > /data/adb/service.d/0010zram_resize
+swapoff /dev/block/zram0
+zramctl --reset /dev/block/zram0
+echo 8G > /sys/block/zram0/disksize
+# echo 1 > /sys/block/zram0/use_dedup  # not supported on current kernel
+# echo zstd > /sys/block/zram0/comp_algorithm  # not supported on current kernel
+mkswap /dev/block/zram0
+swapon /dev/block/zram0 -p 32758
+EOF
+chmod 755 /data/adb/service.d/0010zram_resize
 ```
