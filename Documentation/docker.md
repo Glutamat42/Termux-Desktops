@@ -17,8 +17,8 @@ Docker allows connecting to a remote docker service. This allows being able to w
 
 As i will do this on my phone i will do it directly in termux. With some smal adjustments it is possible to do it in chroot on the tablet.
 
-# if /dev/kvm does not exist, it is possible to continue this guide, but the performance will be poor.
-# In this case, in the qemu-system-aarch64 commands remove -accel=kvm and change -cpu=host to -cpu=max
+if /dev/kvm does not exist, it is possible to continue this guide, but the performance will be poor.
+In this case, in the qemu-system-aarch64 commands remove -accel=kvm and change -cpu=host to -cpu=max
 
 ## Initial setup on chroot
 
