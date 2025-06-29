@@ -141,7 +141,7 @@ The Docker network hodst does not provide authentication, therefore the connecti
 
 Run the below command to expose the docker daemon on localhost:2375 after inserting the correct IP.
 ```bash
-ssh -NL 2375:localhost:2375 root@<vm-ip-or-host>:2222
+ssh -NL 2375:localhost:2375 -p 2222 root@<vm-ip-or-host>
 ```
 
 Then execute 
@@ -151,4 +151,4 @@ export DOCKER_HOST=tcp://localhost:2375
 in the terminal you want to execute docker commands in. Now it is possible to run docker commands, eg `docker ps`
 
 ## Access ports of docker containers
-Docker services are only accessible in the vm. To access them from the Tablet they have to be forwarded simmilar tot the port 2375 forward. Alternatively it is possible to start a socks proxy with SSH (`ssh -D 8080 root@<vm-ip-or-host>:2222`)
+Docker services are only accessible in the vm. To access them from the Tablet they have to be forwarded simmilar tot the port 2375 forward. Alternatively it is possible to start a socks proxy with SSH (`ssh -D 8080 -p 2222 root@<vm-ip-or-host>`)
