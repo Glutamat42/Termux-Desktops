@@ -29,7 +29,14 @@ pkg remove tsu && pkg i sudo
 
 
 ### Termux X11
-Display scaling 200%, Touch input: direct
+In Preferences
+- activate Keyboard -> Enable Acessibility services for intercepting system shortcuts manually
+  - In case the option is grayed out open the Android Settings -> Apps, find Termux X11 -> 3 dots -> Eingeschr'nkte Einstellungen zulassen
+- activate Keyboard -> Prefer scancodes when possible
+- activate Pointer -> Touchscreen input mode -> Direct touch
+- Enable Screen scaling
+    - Output -> Displaz resolution mode: scaled
+    - Output -> Displaz scale, %: 200 (adjust to your needs)
 
 # chroot Guide
 [My Debian Trixie chroot guide](./Documentation/chroot/debian_chroot.md)
