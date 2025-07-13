@@ -17,3 +17,5 @@ Testscenario: Fresh Debian Trixie installation in Virtualbox. Installed the DE v
 I decided to use openbox. During the setup script choose to install openbox. This will install a minimal version of openbox. 
 
 After the setup script finished, continue with the setup script in scripts/openbox. For now the you have to clone the repo into the chroot and then run the script as your user inside the chhroot.
+
+To run applications inside openbox press Alt + Space. This will open an application launcher. type the application name (e.g. firefox or l3afpad) and press enter to start it.
