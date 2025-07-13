@@ -124,7 +124,7 @@ Do the same with file 2. The Variable `DEBIANPATH` contains the path for folder 
 > Otherwise you will scew up Android and will have to force reboot your device to make it work again.
 
 ## Issues
-### ttermux x11 Cannot establish any listening sockets - Make sure an X server isn't already running(EE)
+### Termux-X11 Cannot establish any listening sockets - Make sure an X server isn't already running(EE)
 
 ```bash
 rm -rf $TMPDIR/*

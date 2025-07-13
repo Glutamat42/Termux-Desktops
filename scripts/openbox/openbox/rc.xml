@@ -177,18 +177,9 @@
     <!-- 'Left', 'Middle', 'Right' -->
   </dock>
   <keyboard>
-    <keybind key="S-space">
+    <keybind key="A-space">
       <action name="Execute">
         <command>rofi -show run</command>
-      </action>
-    </keybind>
-    <keybind key="S-Tab">
-      <action name="NextWindow">
-        <finalactions>
-          <action name="Focus"/>
-          <action name="Raise"/>
-          <action name="Unshade"/>
-        </finalactions>
       </action>
     </keybind>
     <!-- Keybindings for desktop switching -->
