@@ -13,3 +13,5 @@ Testscenario: Fresh Debian Trixie installation in Virtualbox. Installed the DE v
 | lxqt                     | 1264                      | 4.30           | 0.60             |
 | openbox + minimal tools  | ~350                      | 1.90           | 0.42             |
 
+# Setting up openbox
+I decided to use openbox. During the setup script choose to install openbox. This will install a minimal version of openbox. After the setup script finished, continue with the setup script in scripts/openbox. 
