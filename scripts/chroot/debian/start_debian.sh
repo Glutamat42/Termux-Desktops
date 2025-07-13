@@ -18,4 +18,11 @@ busybox mount -t tmpfs -o size=256M tmpfs $DEBIANPATH/dev/shm
 mkdir -p $DEBIANPATH/sdcard
 busybox mount --bind /sdcard $DEBIANPATH/sdcard
 
-busybox chroot $DEBIANPATH /bin/su - $CHROOT_USERNAME -c "export DISPLAY=:0 && export PULSE_SERVER=127.0.0.1 && dbus-launch --exit-with-session $START_DESKTOP_CMD"
+# Check if we're starting bash only or a desktop environment
+if [ "$START_DESKTOP_CMD" = "bash" ]; then
+    # For bash only, start a simple bash session
+    busybox chroot $DEBIANPATH /bin/su - $CHROOT_USERNAME
+else
+    # For desktop environments, use dbus-launch with display
+    busybox chroot $DEBIANPATH /bin/su - $CHROOT_USERNAME -c "export DISPLAY=:0 && export PULSE_SERVER=127.0.0.1 && dbus-launch --exit-with-session $START_DESKTOP_CMD"
+fi

@@ -155,19 +155,23 @@ configure_debian_chroot() {
     success "User account set up and sudo permissions configured"
 
     # Prompt for desktop environment
-    progress "Select a desktop environment to install:"
+    progress "Select an environment to install:"
     echo "1. XFCE4"
     echo "2. openbox"
-    echo -n "Enter your choice (1-4): "
+    echo "3. bash only (no desktop environment)"
+    echo -n "Enter your choice (1-3): "
     read DE_OPTION
 
-    # Install selected desktop environment
+    # Install selected environment
     case $DE_OPTION in
         1)
             install_xfce4
             ;;
         2)
             install_openbox
+            ;;
+        3)
+            install_bash_only
             ;;
         *)
             echo -e "\e[1;31m[!] Invalid option. Exiting...\e[0m"
@@ -185,14 +189,36 @@ install_xfce4() {
 
 # Function to install openbox window manager
 install_openbox() {
-    progress "Installing KDE..."
+    progress "Installing openbox..."
     busybox chroot $DEBIANPATH /bin/su - root -c "apt-get update && apt-get install dbus-x11 openbox -y"
     START_DESKTOP_CMD="openbox-session"
 }
 
+# Function to set up bash only environment
+install_bash_only() {
+    progress "Setting up bash only environment..."
+    success "Bash environment ready - no desktop environment will be installed"
+    START_DESKTOP_CMD="bash"
+}
+
 create_termux_script() {
     script_path=/data/data/com.termux/files/usr/bin/"$SYSTEM_CMD_START_CHROOT"
-    tee $script_path > /dev/null << 'EOF'
+    
+    if [ "$START_DESKTOP_CMD" = "bash" ]; then
+        # Create a simplified script for bash-only mode
+        tee $script_path > /dev/null << 'EOF'
+#!/bin/bash
+[ "$(id -u)" -eq 0 ] && echo "This script must not be run as root." && exit 1
+
+CHROOT_NAME=REPLACEME_CHROOT_NAME
+DEBIANPATH=REPLACEME_DEBIANPATH
+
+echo "Starting Debian chroot (bash only mode)..."
+su -c /data/local/tmp/start_debian$CHROOT_NAME.sh
+EOF
+    else
+        # Create the full script for desktop environments
+        tee $script_path > /dev/null << 'EOF'
 #!/bin/bash
 [ "$(id -u)" -eq 0 ] && echo "This script must not be run as root." && exit 1
 
@@ -221,6 +247,8 @@ pacmd load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymou
 
 su -c /data/local/tmp/start_debian$CHROOT_NAME.sh
 EOF
+    fi
+    
     chmod +x $script_path
     sed -i "s/REPLACEME_CHROOT_NAME/$CHROOT_NAME/g" $script_path
     sed -i "s#REPLACEME_DEBIANPATH#$DEBIANPATH#g" $script_path
