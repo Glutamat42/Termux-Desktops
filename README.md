@@ -1,6 +1,8 @@
-# Android on Linux: Termux X11 Desktops
+# Android on Linux: Termux X11 Desktop
 
 This is the documentation on how i set up my desktop environment on my Xiaomi Pad 6 (pipa) with PixelOS. It's based on DroidMasters [Termux-Desktops](https://github.com/LinuxDroidMaster/Termux-Desktops) project.
+
+![Termux Desktop Screenshot](./Documentation/screenshot-openbox-desktop.webp)
 
 
 ## Evaluation of Approaches
