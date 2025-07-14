@@ -15,6 +15,12 @@ My evaluation for the 4 possible Approaches
 - Proot: Worked fine, setup was easy, but performance was bad. Starting Firefox and loading the webpages to download two applications took minutes. Would technically fullfill my requirements, but would not be a fun experience
 - Chroot: Well... has to work as it's the only option left. Setup had some issues, but i got it working.
 
+## Known Issues
+- GPU acceleration is not working. This is doable, but I did not yet manage to get it working.
+- Docker is not possible as of missing kernel features. I did work around this by using a 2nd device with kvm support.
+- Screen recording (eg with OBS) is not working. This is very likely fixable.
+- Using external storage devices needs manual mounting (mount --bind) and unmounting.
+- There are some permission issues with fuse and applications using sandboxing (eg AppImages). For now I am working around this by using sudo / disabling sandboxing.
 
 ## General
 Pixel OS 15, Magisk for root.
