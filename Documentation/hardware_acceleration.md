@@ -59,7 +59,11 @@ sudo make install
 
 Now it is possible to run x86 applications by prefixing the command with `box64`. For example `box64 glxinfo`.
 
-I did not continue heree as without `binfmt` I cannot practically use it without doing things like x86 chroot or wine prefix.
+Combined with wine it is possible to run x86 windows applications as well.
+
+Using [hangover](https://github.com/AndreRH/hangover) might simplify a lot of the subsequent setup to run windows applications/games.
+
+I did not continue here as without `binfmt` I cannot practically use it without doing things like x86 chroot or wine prefix.
 
 ## Outlook
 To continue from here on and actually run x86 applications like games i see the following options:
@@ -85,15 +89,21 @@ If bootlooping or having other boot issues you can recover as follows:
 If recovery is broken too
 1) Boot to fastboot (Power + volume down)
 2) Fastboot flashing as above is now possible. On Windows i had the issue that the device did not show up in `fastboot devices`. Reason was a driver issue. I did update drivers to the latest one from google but still not detected. Issue was Windows is using a wrong driver. Open device manager, finde "Android" device with a warning sign. Update driver, select manually and select "Android Bootloader Interface". After that it should show up in fastboot.
+3) For Magisk boot into recovery (now working again) and continue as described above.
 
 ### x86 chroot
-TODO
+The idea is to run the whole chroot with box64. Not sure if this is actually possible and how to do it. I did not explore this path. Chatty once told me it should be possible.
 
-custom kernels (incl recovery)
-full x86 chroot
-full x86 wine
-postmarketos
+### x86 wine
+The idea here is to run only wine with box64. Chroot stays on arm. This is working and as i understand it the approach used by [winlator](https://github.com/brunodev85/winlator) and [box64droid](https://github.com/Ilya114/Box64Droid). Everyting run in wine will likely be x86 anyways so this approach is fine and worth to follow. I did manage to get steam to fully start with this approach, but then did not continue following it. Have a look on [hangover](https://github.com/AndreRH/hangover) when following this path.
 
-other limitations
-- android killing termux for reasons
-- android ram management
+### PostmarketOS
+[PostmarketOS pipa wiki](https://wiki.postmarketos.org/wiki/Xiaomi_Pad_6_(xiaomi-pipa))
+
+This follows a different approach as this whole project. Instead of setting up a Linux chroot on Android it is a Linux system with the ability to run Android apps. No idea how well it works as I was not yet able to get it running. There was some initial work done to get Post markets running on pipa but the efforts seem to have been abandoned. The code from the unmerged pull request (see wiki) does not work anymore. I did port some recent changes to the pr (not puplic) and did get a successfull build without systemd but it still fails with systemd. Also did not yet flash it.
+
+This approach might solve some issues the Android based approach has, most notably:
+- Kernel may support binfmt
+- Kernel may support zstd for zram
+- Better memory management (how Android manages memory is not beneficial for chroot. It always has a high memory usage which is not bad by itself as unused memory is wasted memory. Also for some reasons android did rarely use more than 4GB zram when increasing the size to 8GB)
+- Chroot not being terminated because android closes termux (happens rarely but very annoying and happens more often when using memory hungy applications)
