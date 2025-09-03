@@ -97,6 +97,8 @@ The idea is to run the whole chroot with box64. Not sure if this is actually pos
 ### x86 wine
 The idea here is to run only wine with box64. Chroot stays on arm. This is working and as i understand it the approach used by [winlator](https://github.com/brunodev85/winlator) and [box64droid](https://github.com/Ilya114/Box64Droid). Everyting run in wine will likely be x86 anyways so this approach is fine and worth to follow. I did manage to get steam to fully start with this approach, but then did not continue following it. Have a look on [hangover](https://github.com/AndreRH/hangover) when following this path.
 
+It might also be interesting to set up a bionic c library based chroot for this usecase. This should allow to use all the emulator/winlator drivers for gpu acceleration. As this chroot would only run wine, the compatibility issues with bionic should be minimal.
+
 ### PostmarketOS
 [PostmarketOS pipa wiki](https://wiki.postmarketos.org/wiki/Xiaomi_Pad_6_(xiaomi-pipa))
 
