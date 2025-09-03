@@ -40,6 +40,9 @@ export MESA_LOADER_DRIVER_OVERRIDE=zink
 export TU_DEBUG=noconform
 ```
 
+> [!INFO]
+> [This repo](https://github.com/MastaG/mesa-turnip-ppa) might contain more recent drivers, but the owner warns that he did not maintain it for some time and the latest builds are broken
+
 ## x86/x86_64 emulation
 > [!IMPORTANT]
 > This will and cannot work properly on the Xiaomi Pad 6 because the kernel does not support `binfmt`. Without this it is still possible to run x86 apps, but as soon as this application calls another x86 application (indirerctly through an arm application) it will fail (eg steam). I did not find a kernel with binfmt support.
